@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-agri-50: #f0fdf4;
+  --color-agri-100: #dcfce7;
+  --color-agri-500: #22c55e;
+  --color-agri-600: #16a34a;
+  --color-agri-700: #15803d;
+  --color-agri-800: #166534;
+  --color-agri-900: #14532d;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
