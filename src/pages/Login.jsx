@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Tractor, ShoppingBag, ArrowRight } from 'lucide-react';
 
@@ -7,6 +7,10 @@ export default function Login() {
     const [role, setRole] = useState('farmer'); // 'farmer' or 'buyer'
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    // After login, return to the originally requested page only when the role matches.
+    // A buyer who was bounced from /dashboard must NOT be sent there after logging in as farmer.
+    const from = location.state?.from?.pathname;
 
     // State for different login methods
     const [loading, setLoading] = useState(false);
@@ -39,7 +43,19 @@ export default function Login() {
 
             login(role, userType, extraData);
             setLoading(false);
-            navigate('/dashboard');
+
+            // Always redirect to the role's home dashboard.
+            // Only honour `from` if it belongs to the same role's area.
+            const farmerPaths = ['/dashboard', '/analytics', '/storage', '/transportation', '/profile'];
+            const buyerPaths = ['/buyer-dashboard'];
+
+            if (role === 'farmer') {
+                const dest = from && farmerPaths.includes(from) ? from : '/dashboard';
+                navigate(dest, { replace: true });
+            } else {
+                const dest = from && buyerPaths.includes(from) ? from : '/buyer-dashboard';
+                navigate(dest, { replace: true });
+            }
         }, 1000);
     };
 

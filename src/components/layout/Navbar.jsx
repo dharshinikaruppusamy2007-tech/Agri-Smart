@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sprout, Menu, X, User, LogOut, UserCircle } from 'lucide-react';
+import { Sprout, Menu, X, User, LogOut, UserCircle, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
@@ -11,8 +11,10 @@ export default function Navbar() {
     const location = useLocation();
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
     const isActive = (path) => location.pathname === path;
+
+    const isFarmer = user?.role === 'farmer';
+    const isBuyer = user?.role === 'buyer';
 
     return (
         <nav className="bg-white shadow-md border-b border-agri-100 sticky top-0 z-50">
@@ -32,7 +34,9 @@ export default function Navbar() {
                         <Link to="/" className={`${isActive('/') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
                             Home
                         </Link>
-                        {user && (
+
+                        {/* Farmer-specific nav */}
+                        {isFarmer && (
                             <>
                                 <Link to="/dashboard" className={`${isActive('/dashboard') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
                                     Dashboard
@@ -43,6 +47,9 @@ export default function Navbar() {
                                 <Link to="/storage" className={`${isActive('/storage') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
                                     Storage
                                 </Link>
+                                <Link to="/transportation" className={`${isActive('/transportation') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
+                                    Transportation
+                                </Link>
                                 <Link to="/market" className={`${isActive('/market') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
                                     Market Prices
                                 </Link>
@@ -51,6 +58,26 @@ export default function Navbar() {
                                 </Link>
                             </>
                         )}
+
+                        {/* Buyer-specific nav */}
+                        {isBuyer && (
+                            <>
+                                <Link to="/buyer-dashboard" className={`${isActive('/buyer-dashboard') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
+                                    Buyer Dashboard
+                                </Link>
+                                <Link to="/marketplace" className={`${isActive('/marketplace') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
+                                    Marketplace
+                                </Link>
+                                <Link to="/market" className={`${isActive('/market') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
+                                    Market Prices
+                                </Link>
+                                <Link to="/buyer-profile" className={`${isActive('/buyer-profile') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
+                                    Profile
+                                </Link>
+                            </>
+                        )}
+
+                        {/* Market Prices visible to logged-out users too */}
                         {!user && (
                             <Link to="/market" className={`${isActive('/market') ? 'text-agri-600 font-medium' : 'text-gray-600 hover:text-agri-600'} transition-colors`}>
                                 Market Prices
@@ -65,7 +92,7 @@ export default function Navbar() {
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-agri-600 transition-colors focus:outline-none"
                                 >
-                                    <User size={16} />
+                                    {isBuyer ? <ShoppingBag size={16} /> : <User size={16} />}
                                     <span>{user.name} ({user.role})</span>
                                 </button>
 
@@ -78,15 +105,17 @@ export default function Navbar() {
                                             {user.phone && <p className="text-sm text-gray-500">📱 {user.phone}</p>}
                                             {user.email && <p className="text-sm text-gray-500">✉️ {user.email}</p>}
                                         </div>
-                                        <div className="px-4 py-2">
-                                            <button
-                                                onClick={() => { setIsProfileOpen(false); navigate('/profile'); }}
-                                                className="w-full text-left text-agri-600 hover:text-agri-700 text-sm font-medium flex items-center gap-2 py-1"
-                                            >
-                                                <UserCircle size={16} />
-                                                View Profile
-                                            </button>
-                                        </div>
+                                        {isFarmer && (
+                                            <div className="px-4 py-2">
+                                                <button
+                                                    onClick={() => { setIsProfileOpen(false); navigate('/profile'); }}
+                                                    className="w-full text-left text-agri-600 hover:text-agri-700 text-sm font-medium flex items-center gap-2 py-1"
+                                                >
+                                                    <UserCircle size={16} />
+                                                    View Profile
+                                                </button>
+                                            </div>
+                                        )}
                                         <div className="px-4 py-2">
                                             <button
                                                 onClick={() => {
@@ -131,30 +160,45 @@ export default function Navbar() {
             {isMenuOpen && (
                 <div className="md:hidden bg-white border-t border-gray-100 p-4 space-y-4">
                     <Link to="/" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Home</Link>
-                    {user && (
+
+                    {/* Farmer mobile nav */}
+                    {isFarmer && (
                         <>
                             <Link to="/dashboard" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
                             <Link to="/analytics" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Analytics</Link>
                             <Link to="/storage" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Storage</Link>
+                            <Link to="/transportation" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Transportation</Link>
                             <Link to="/market" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Market Prices</Link>
                             <Link to="/profile" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Profile</Link>
                         </>
                     )}
+
+                    {/* Buyer mobile nav */}
+                    {isBuyer && (
+                        <>
+                            <Link to="/buyer-dashboard" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Buyer Dashboard</Link>
+                            <Link to="/marketplace" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Marketplace</Link>
+                            <Link to="/market" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Market Prices</Link>
+                            <Link to="/buyer-profile" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Profile</Link>
+                        </>
+                    )}
+
                     {!user && (
                         <Link to="/market" className="block text-gray-600 hover:text-agri-600 font-medium" onClick={() => setIsMenuOpen(false)}>Market Prices</Link>
                     )}
+
                     <div className="pt-4 border-t border-gray-100">
                         {user ? (
                             <div className="flex flex-col space-y-3 pb-3 border-b border-gray-100 mb-3">
                                 <div>
                                     <p className="font-medium text-gray-900">{user.name}</p>
                                     <p className="text-sm text-gray-500 capitalize">Role: {user.role}</p>
-                                    {user.location && <p className="text-sm text-gray-500 delay-100">Location: {user.location}</p>}
+                                    {user.location && <p className="text-sm text-gray-500">Location: {user.location}</p>}
                                     {user.phone && <p className="text-sm text-gray-500">Phone: {user.phone}</p>}
                                     {user.email && <p className="text-sm text-gray-500">Email: {user.email}</p>}
                                 </div>
                                 <button
-                                    onClick={() => { logout(); setIsMenuOpen(false); }}
+                                    onClick={() => { logout(); setIsMenuOpen(false); navigate('/login'); }}
                                     className="w-full text-left text-red-600 font-medium flex items-center gap-2"
                                 >
                                     <LogOut size={16} /> Logout
