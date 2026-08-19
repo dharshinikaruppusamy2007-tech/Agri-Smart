@@ -16,70 +16,53 @@ CROP_DATA.Sugarcane.low = 3.0;
 CROP_DATA.Sugarcane.high = 4.0;
 
 export const calculateAgriStats = (inputs) => {
-    const { crop, quantity, productionCost, capacity, storageCostPerKg, transportCostPerKm, distance } = inputs;
+    const { crop, quantity, productionCost, capacity, storageCostPerKg, transportCostPerKm, distance, recommendedPrice: recPriceInput } = inputs;
 
     const cropInfo = CROP_DATA[crop] || { spoilageRisk: 15, marketPrice: 0 };
     const qty = parseFloat(quantity) || 0;
+    const capacityVal = parseFloat(capacity) || 0;
 
-    // Storage Logic
-    const ownStorageUsed = Math.min(qty, parseFloat(capacity) || 0);
-    const excessStorage = Math.max(0, qty - (parseFloat(capacity) || 0));
-    const storageCost = excessStorage * (parseFloat(storageCostPerKg) || 0); // Cost applies to excess only? 
-    // User prompt: "Storage Cost per kg (₹)" and "Input: Available Storage Capacity".
-    // Let's assume Storage Cost per Kg is for *rented* storage for the excess.
+    // Revenue
+    const recommendedPrice = parseFloat(recPriceInput) || 24;
+    const revenue = qty * recommendedPrice;
 
-    // Transport Logic
-    // Assuming 1 trip for standard truck (10 tons). If quantity > 10000, multiple trips?
-    // User prompt: "Transport Cost per km (₹)".
-    // If user enters "50/km", it's likely for the whole load if small, or per truck.
-    // Let's assume the cost provided IS the total transport cost per km for the entire shipment 
-    // (simplified, or user calculates it: "Rent a truck for ₹30/km").
+    // Costs
+    const prodCostVal = parseFloat(productionCost) || 0;
+
+    // Use Math.min so we don't charge for empty capacity space if qty < capacity, 
+    // but caps at capacity for storage cost.
+    const storedQty = Math.min(qty, capacityVal);
+    const storageCost = storedQty * (parseFloat(storageCostPerKg) || 0);
+
     const transCost = (parseFloat(distance) || 0) * (parseFloat(transportCostPerKm) || 0);
 
-    // Spoilage
-    // Risk based on crop type + time?
-    // Prompt: "Calculates spoilage if storage exceeds capacity".
-    // If excess storage > 0, spoilage risk increases?
-    // Let's apply base risk. If excess > 0, add penalty risk if not stored properly?
-    // But we utilize "Storage Cost" so we assume it IS stored properly in rented space.
-    // Let's treat "Spoilage Risk Percentage" as the intrinsic risk + 5% if excess exist?
-    let risk = cropInfo.spoilageRisk;
-    if (excessStorage > 0) risk += 5; // Penalty for logic
-    const spoilageLossQty = qty * (risk / 100);
-    const spoilageLossValue = spoilageLossQty * cropInfo.marketPrice;
+    const totalCost = prodCostVal + storageCost + transCost;
 
-    // Financials
-    const totalProductionCost = parseFloat(productionCost) || 0; // User inputs TOTAL cost or per kg? "Cost of Production (₹)" - usually Total.
-    // But if user inputs 20000, and quantity is 1000, cost is 20/kg.
-
-    const totalCost = totalProductionCost + storageCost + transCost;
-    const unitCost = qty > 0 ? totalCost / qty : 0;
-
-    // Pricing
-    const marketPrice = cropInfo.marketPrice;
-    const recommendedPrice = Math.max(marketPrice, unitCost * 1.3); // Ensure 30% margin or Market Price
-
-    // Revenue & Profit
-    const effectiveQty = qty - spoilageLossQty; // Sellable
-    const revenue = effectiveQty * recommendedPrice;
+    // Profit
     const netProfit = revenue - totalCost;
 
-    // Allocations
+    // Excess Crop
+    const excessStorage = Math.max(0, qty - capacityVal);
+    const ownStorageUsed = storedQty;
+
+    // Others
     const emergencyBuffer = netProfit > 0 ? netProfit * 0.05 : 0;
     const savings = netProfit > 0 ? netProfit * 0.20 : 0;
+    const spoilageLossValue = excessStorage * (cropInfo.marketPrice || 24); // mock spoilage loss if needed
 
     return {
+        revenue,
         ownStorageUsed,
         excessStorage,
         storageCost,
         transCost,
-        spoilageRisk: risk,
+        spoilageRisk: cropInfo.spoilageRisk,
         spoilageLossValue,
         totalCost,
         recommendedPrice,
         netProfit,
         emergencyBuffer,
         savings,
-        marketPrice
+        marketPrice: cropInfo.marketPrice
     };
 };

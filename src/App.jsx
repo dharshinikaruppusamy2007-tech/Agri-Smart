@@ -8,6 +8,8 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import Market from './pages/Market';
+import Profile from './pages/Profile';
+import StorageManagement from './pages/StorageManagement';
 
 function App() {
   return (
@@ -21,7 +23,9 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/storage" element={<StorageManagement />} />
             <Route path="/market" element={<Market />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

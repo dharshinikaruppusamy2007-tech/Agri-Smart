@@ -8,12 +8,19 @@ export default function Signup() {
     const { login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [name, setName] = useState('');
+    const [location, setLocation] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
         setTimeout(() => {
-            login(role, role === 'farmer' ? 'New Farmer' : 'New Buyer');
+            const extraData = role === 'farmer'
+                ? { location, phone }
+                : { location, email };
+            login(role, name || (role === 'farmer' ? 'New Farmer' : 'New Buyer'), extraData);
             setLoading(false);
             navigate('/dashboard');
         }, 1000);
@@ -74,28 +81,63 @@ export default function Signup() {
                             <input
                                 type="text"
                                 required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-500 focus:border-agri-500 outline-none transition-all bg-gray-50 focus:bg-white"
-                                placeholder="Ramesh Kumar"
+                                placeholder={role === 'farmer' ? "Ramesh Kumar" : "John Doe"}
                             />
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                             <input
-                                type="email"
+                                type="text"
                                 required
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-500 focus:border-agri-500 outline-none transition-all bg-gray-50 focus:bg-white"
-                                placeholder="ramesh@example.com"
+                                placeholder="e.g. Madurai, Tamil Nadu"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input
-                                type="password"
-                                required
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-500 focus:border-agri-500 outline-none transition-all bg-gray-50 focus:bg-white"
-                                placeholder="Create a strong password"
-                            />
-                        </div>
+
+                        {role === 'farmer' ? (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    required
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    pattern="[6-9][0-9]{9}"
+                                    title="Please enter a valid 10-digit Indian phone number"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-500 focus:border-agri-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                                    placeholder="9876543210"
+                                />
+                            </div>
+                        ) : (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-500 focus:border-agri-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                                        placeholder="buyer@example.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-agri-500 focus:border-agri-500 outline-none transition-all bg-gray-50 focus:bg-white"
+                                        placeholder="Create a strong password"
+                                    />
+                                </div>
+                            </>
+                        )}
 
                         <button
                             type="submit"

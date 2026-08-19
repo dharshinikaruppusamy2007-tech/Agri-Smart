@@ -7,8 +7,10 @@ import 'jspdf-autotable';
 import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 export default function FarmerDashboard() {
-    const { user } = useAuth(); // Get user from context
-    const [inputs, setInputs] = useState({
+    const { user, harvestInputs, setHarvestInputs } = useAuth(); // Get user and shared state from context
+
+    // Default initial inputs if not set
+    const inputs = harvestInputs || {
         crop: 'Wheat',
         quantity: '1000',
         productionCost: '15000',
@@ -16,18 +18,24 @@ export default function FarmerDashboard() {
         storageCostPerKg: '2',
         transportCostPerKm: '25',
         distance: '50',
-    });
+        recommendedPrice: '24'
+    };
 
     const [stats, setStats] = useState(null);
 
     useEffect(() => {
+        // Only set default to context once if not available
+        if (!harvestInputs) {
+            setHarvestInputs(inputs);
+        }
+
         const results = calculateAgriStats(inputs);
         setStats(results);
-    }, [inputs]);
+    }, [inputs, harvestInputs, setHarvestInputs]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setInputs(prev => ({ ...prev, [name]: value }));
+        setHarvestInputs(prev => ({ ...prev, [name]: value }));
     };
 
     const generatePDF = () => {
@@ -139,6 +147,12 @@ export default function FarmerDashboard() {
                             <div>
                                 <label className="text-sm font-medium text-gray-600">Distance (km)</label>
                                 <input type="number" name="distance" value={inputs.distance} onChange={handleChange} className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-agri-500" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">Recommended Price (Rs/kg)</label>
+                                <input type="number" name="recommendedPrice" value={inputs.recommendedPrice} onChange={handleChange} className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-agri-500" />
                             </div>
                         </div>
                     </div>

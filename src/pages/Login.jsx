@@ -32,7 +32,12 @@ export default function Login() {
         // Simulate API call
         setTimeout(() => {
             const userType = role === 'farmer' ? 'Ramesh Kumar' : 'Big Basket Ltd';
-            login(role, userType);
+
+            const extraData = role === 'farmer'
+                ? { location: 'Madurai, Tamil Nadu', phone: mobile }
+                : { location: 'Chennai, Tamil Nadu', email: email };
+
+            login(role, userType, extraData);
             setLoading(false);
             navigate('/dashboard');
         }, 1000);
